@@ -9,6 +9,7 @@ from django.utils.dateparse import parse_date
 from datetime import date, datetime
 import json
 import csv
+from django.urls import reverse
 
 from .models import (
     VehicleMaster,
@@ -630,6 +631,14 @@ def download_csv(request):
     return response
 
 @login_required(login_url='login')
+def notifications_list(request):
+    qs = Notification.objects.filter(user=request.user).order_by('-created_at')
+    status = request.GET.get('status')
+    if status in ('unread', 'read', 'snoozed'):
+        qs = qs.filter(status=status)
+    return render(request, 'notifications_list.html', {'notifications': qs, 'status': status})
+
+@login_required(login_url='login')
 def notification_settings(request):
     return render(request, 'notification_settings.html')
 
@@ -649,7 +658,9 @@ def notifications_api(request):
             'message': n.message,
             'status': n.status,
             'created_at': n.created_at.isoformat(),
-            'vehicle_plate': n.vehicle.plate_number if n.vehicle else 'N/A'
+            'vehicle_plate': n.vehicle.plate_number if n.vehicle else 'N/A',
+            'vehicle_chassis': n.vehicle.chassis_number if n.vehicle else None,
+            'edit_url': reverse('vehicle_update', args=[n.vehicle.chassis_number]) if n.vehicle else None,
         } for n in notifications]
 
         return JsonResponse({
@@ -665,20 +676,49 @@ def notification_action_api(request, notification_id, action):
     except Notification.DoesNotExist:
         return HttpResponseBadRequest("Notification not found")
 
-    if request.method == 'POST':
-        if action == 'read':
-            notification.status = 'read'
-            notification.save()
-            return JsonResponse({'status': 'ok'})
-        elif action == 'snooze':
-            notification.status = 'snoozed'
-            notification.snoozed_until = timezone.now() + timedelta(days=7)
-            notification.save()
-            return JsonResponse({'status': 'ok'})
-        else:
-            return HttpResponseBadRequest("Invalid action")
-    
-    return HttpResponseNotAllowed(['POST'])
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    if action == 'read':
+        notification.status = 'read'
+        notification.snoozed_until = None
+        notification.save()
+        return JsonResponse({'status': 'ok'})
+    elif action == 'unread':
+        notification.status = 'unread'
+        notification.snoozed_until = None
+        notification.save()
+        return JsonResponse({'status': 'ok'})
+    elif action == 'snooze':
+        # Support snoozing for 7, 14, or 30 days via ?days=7|14|30 or POST/JSON payload; default to 7
+        days = 7
+        try:
+            # Query param
+            if 'days' in request.GET:
+                days = int(request.GET.get('days', 7))
+            # JSON body
+            elif request.META.get('CONTENT_TYPE', '').startswith('application/json'):
+                try:
+                    body = json.loads((request.body or b'').decode('utf-8') or '{}')
+                    if isinstance(body, dict) and 'days' in body:
+                        days = int(body.get('days', 7))
+                except Exception:
+                    pass
+            # Form body
+            elif 'days' in request.POST:
+                days = int(request.POST.get('days', 7))
+        except Exception:
+            days = 7
+
+        if days not in (7, 14, 30):
+            days = 7
+
+        notification.status = 'snoozed'
+        notification.snoozed_until = timezone.now() + timedelta(days=days)
+        notification.save()
+        return JsonResponse({'status': 'ok', 'days': days, 'snoozed_until': notification.snoozed_until.isoformat()})
+    else:
+        return HttpResponseBadRequest("Invalid action")
 
 @login_required(login_url='login')
 def user_notification_settings_api(request):

@@ -91,18 +91,97 @@
             </svg>
             <span x-text="unreadCount" class="absolute top-1 right-1 w-4 h-4 bg-teal-500 rounded-full ring-2 ring-white text-xs text-white flex items-center justify-center"></span>
           </button>
-          <div x-show="open" x-cloak @click.away="open = false" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl overflow-hidden z-20">
+          <div x-show="open" x-cloak @click.outside="open = false" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl overflow-hidden z-20">
             <div class="py-2 px-4 text-sm font-medium text-gray-700 border-b">Notifications</div>
             <div class="divide-y">
               <template x-for="notification in notifications" :key="notification.id">
                 <div class="p-3 hover:bg-gray-50">
-                  <p class="text-sm text-gray-600" x-text="notification.message"></p>
-                  <p class="text-xs text-gray-400" x-text="new Date(notification.created_at).toLocaleString()"></p>
+                  <div class="flex items-start justify-between">
+                    <div class="cursor-pointer" @click="openNotification(notification)">
+                      <p class="text-sm text-gray-600" x-text="notification.message"></p>
+                      <p class="text-xs text-gray-400" x-text="new Date(notification.created_at).toLocaleString()"></p>
+                    </div>
+                    <div class="ml-3 flex items-center gap-2">
+                      <button
+                        class="text-xs px-2 py-1 rounded bg-teal-50 text-teal-700 hover:bg-teal-100"
+                        @click.stop="(async () => {
+                          await fetch('/office/api/notifications/' + notification.id + '/read/', {
+                            method: 'POST',
+                            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                          });
+                          notifications = notifications.filter(n => n.id !== notification.id);
+                          unreadCount = Math.max(0, unreadCount - 1);
+                        })()"
+                      >
+                        Mark read
+                      </button>
+                      <div class="relative" x-data="{ openSnooze: false }">
+                        <button
+                          class="text-xs px-2 py-1 rounded bg-slate-50 text-slate-600 hover:bg-slate-100"
+                          @click.stop="openSnooze = !openSnooze"
+                        >
+                          Snooze
+                        </button>
+                        <div
+                          x-show="openSnooze"
+                          x-cloak
+                          @click.outside="openSnooze = false"
+                          class="absolute right-0 mt-1 w-32 bg-white border border-slate-200 rounded shadow-lg z-30"
+                        >
+                          <button
+                            class="w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50"
+                            @click.stop="(async () => {
+                              await fetch('/office/api/notifications/' + notification.id + '/snooze/?days=7', {
+                                method: 'POST',
+                                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                              });
+                              notifications = notifications.filter(n => n.id !== notification.id);
+                              unreadCount = Math.max(0, unreadCount - 1);
+                              openSnooze = false;
+                            })()"
+                          >
+                            7 days
+                          </button>
+                          <button
+                            class="w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50"
+                            @click.stop="(async () => {
+                              await fetch('/office/api/notifications/' + notification.id + '/snooze/?days=14', {
+                                method: 'POST',
+                                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                              });
+                              notifications = notifications.filter(n => n.id !== notification.id);
+                              unreadCount = Math.max(0, unreadCount - 1);
+                              openSnooze = false;
+                            })()"
+                          >
+                            14 days
+                          </button>
+                          <button
+                            class="w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50"
+                            @click.stop="(async () => {
+                              await fetch('/office/api/notifications/' + notification.id + '/snooze/?days=30', {
+                                method: 'POST',
+                                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                              });
+                              notifications = notifications.filter(n => n.id !== notification.id);
+                              unreadCount = Math.max(0, unreadCount - 1);
+                              openSnooze = false;
+                            })()"
+                          >
+                            30 days
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </template>
               <div x-show="notifications.length === 0" class="p-3 text-center text-sm text-gray-500">
                 No new notifications.
               </div>
+            </div>
+            <div class="p-3 border-t text-center">
+              <a href="{% url 'notifications_list' %}" class="text-sm text-teal-600 hover:text-teal-700 font-medium">View all notifications</a>
             </div>
           </div>
         </div>
@@ -139,16 +218,24 @@
 {% block extra_js %}
 {{ block.super }}
 <script>
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  }
   function safeNotificationBell() {
     try {
       return notificationBell();
     } catch (e) {
       console.error("Error initializing notification bell:", e);
       return {
+        open: false,
         notifications: [],
         unreadCount: 0,
         init() {},
-        fetchNotifications() {}
+        fetchNotifications() {},
+        openNotification() {}
       };
     }
   }
@@ -170,6 +257,25 @@
             this.notifications = data.notifications;
             this.unreadCount = data.unread_count;
           });
+      },
+      openNotification(notification) {
+        if (notification.edit_url) {
+          window.location.href = notification.edit_url;
+          return;
+        }
+        const plate = notification.vehicle_plate;
+        if (!plate) return;
+        fetch("{% url 'vehicle_master_api' %}")
+          .then(r => r.json())
+          .then(list => {
+            const match = (list || []).find(v => v.plate_number === plate);
+            if (match && match.chassis_number) {
+              window.location.href = `/office/vehicle-update/${match.chassis_number}/`;
+            } else {
+              console.warn("No vehicle found for plate:", plate);
+            }
+          })
+          .catch(err => console.error("Failed to resolve vehicle for notification:", err));
       }
     }
   }

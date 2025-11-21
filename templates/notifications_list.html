@@ -1,0 +1,112 @@
+{% extends 'dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="max-w-5xl mx-auto p-6">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-semibold text-slate-800">Notifications</h1>
+    <div class="space-x-2">
+      <a href="{% url 'notifications_list' %}" class="px-3 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200">All</a>
+      <a href="{% url 'notifications_list' %}?status=unread" class="px-3 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200">Unread</a>
+      <a href="{% url 'notifications_list' %}?status=read" class="px-3 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200">Read</a>
+      <a href="{% url 'notifications_list' %}?status=snoozed" class="px-3 py-1 rounded bg-slate-100 text-slate-700 hover:bg-slate-200">Snoozed</a>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow">
+    <div class="divide-y">
+      {% for n in notifications %}
+      <div class="p-4 flex items-center justify-between hover:bg-slate-50">
+        <div class="min-w-0 pr-4">
+          <p class="text-sm text-slate-800 truncate">{{ n.message }}</p>
+          <p class="text-xs text-slate-400">
+            {{ n.created_at|date:"Y-m-d H:i" }} • {{ n.status|title }}
+            {% if n.vehicle %} • Plate: {{ n.vehicle.plate_number }}{% endif %}
+          </p>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          {% if n.vehicle %}
+          <a href="{% url 'vehicle_update' n.vehicle.chassis_number %}" class="text-sm text-teal-600 hover:text-teal-700 font-medium">Open</a>
+          {% endif %}
+          {% if n.status != 'read' %}
+          <button type="button" data-id="{{ n.id }}" class="text-xs px-2 py-1 rounded bg-teal-50 text-teal-700 hover:bg-teal-100" onclick="notifyAction(this.dataset.id, 'read')">Mark read</button>
+          {% endif %}
+          {% if n.status != 'unread' %}
+          <button type="button" data-id="{{ n.id }}" class="text-xs px-2 py-1 rounded bg-slate-50 text-slate-600 hover:bg-slate-100" onclick="notifyAction(this.dataset.id, 'unread')">Mark unread</button>
+          {% endif %}
+          {% if n.status != 'snoozed' %}
+          <div class="relative" x-data="{ openSnooze: false }">
+            <button
+              type="button"
+              class="text-xs px-2 py-1 rounded bg-slate-50 text-slate-600 hover:bg-slate-100"
+              @click="openSnooze = !openSnooze"
+            >
+              Snooze
+            </button>
+            <div
+              x-show="openSnooze"
+              x-cloak
+              @click.outside="openSnooze = false"
+              class="absolute right-0 mt-1 w-32 bg-white border border-slate-200 rounded shadow-lg z-30"
+            >
+              <button
+                type="button"
+                data-id="{{ n.id }}"
+                class="w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50"
+                onclick="notifyAction(this.dataset.id, 'snooze', 7);"
+              >
+                7 days
+              </button>
+              <button
+                type="button"
+                data-id="{{ n.id }}"
+                class="w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50"
+                onclick="notifyAction(this.dataset.id, 'snooze', 14);"
+              >
+                14 days
+              </button>
+              <button
+                type="button"
+                data-id="{{ n.id }}"
+                class="w-full text-left px-3 py-1.5 text-sm hover:bg-slate-50"
+                onclick="notifyAction(this.dataset.id, 'snooze', 30);"
+              >
+                30 days
+              </button>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="p-6 text-center text-slate-500">No notifications.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+<!-- end of notifications_list block -->
+{% block extra_js %}
+{{ block.super }}
+<script>
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  }
+  async function notifyAction(id, action, days) {
+    try {
+      const qs = (action === 'snooze' && days) ? `?days=${encodeURIComponent(days)}` : '';
+      const resp = await fetch(`/office/api/notifications/${id}/${action}/${qs}`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+      });
+      // Best-effort refresh to reflect updated state
+      window.location.reload();
+    } catch (e) {
+      console.error('Failed to update notification:', e);
+      window.location.reload();
+    }
+  }
+</script>
+{% endblock %}

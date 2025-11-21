@@ -16,6 +16,7 @@ from .views import (
     notification_action_api,
     user_notification_settings_api,
     notification_settings,
+    notifications_list,
 )
 
 urlpatterns = [
@@ -34,5 +35,6 @@ urlpatterns = [
     path('api/notifications/', notifications_api, name='notifications_api'),
     path('api/notifications/<int:notification_id>/<str:action>/', notification_action_api, name='notification_action_api'),
     path('api/user-notification-settings/', user_notification_settings_api, name='user_notification_settings_api'),
+    path('notifications/', notifications_list, name='notifications_list'),
     path('notification-settings/', notification_settings, name='notification_settings'),
 ]
