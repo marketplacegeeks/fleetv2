@@ -1,0 +1,32 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Homepage{% endblock %}
+{% block dashboard_content %}
+<div class="py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto text-center">
+    <div class="mb-8">
+      <span class="text-sm font-semibold text-teal-600 uppercase tracking-wider">Welcome to</span>
+      <h1 class="mt-2 text-5xl font-extrabold text-slate-900 tracking-tight sm:text-6xl">
+        FleetPro Vehicle Management
+      </h1>
+      <p class="mt-6 max-w-2xl mx-auto text-lg text-slate-600">
+        Your all-in-one solution for managing and tracking your entire vehicle fleet with ease and efficiency.
+      </p>
+    </div>
+
+    <div class="flex justify-center gap-4">
+      <a href="{% url 'vehicle_master' %}" class="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-gradient-to-r from-teal-600 to-cyan-600 border border-transparent rounded-lg shadow-lg hover:from-teal-700 hover:to-cyan-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-300 transform hover:-translate-y-1">
+        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        View Vehicle Master
+      </a>
+      <a href="{% url 'vehicle_create' %}" class="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-teal-700 bg-white border-2 border-teal-500 rounded-lg shadow-md hover:bg-teal-50 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-300 transform hover:-translate-y-1">
+        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Add New Vehicle
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

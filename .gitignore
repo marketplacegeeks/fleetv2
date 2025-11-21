@@ -1,0 +1,42 @@
+# OS
+.DS_Store
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+*.dist-info/
+.python-version
+
+# Environments
+.env
+.env.*
+.venv/
+venv/
+env/
+
+# Logs
+*.log
+pip-log.txt
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+static/
+
+# Node
+node_modules/
+
+# Local clones / temp directories
+.vfm_repo_clone/
+
+# Misc
+*.tmp
+*.swp
+*.swo

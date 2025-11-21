@@ -1,0 +1,167 @@
+{% extends 'dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="p-8" x-data="notificationSettings()" x-init="init()">
+  <h1 class="text-2xl font-bold text-slate-800 mb-6">Notification Settings</h1>
+  <form id="csrf-form" style="display: none;">{% csrf_token %}</form>
+  
+  <div x-show="saveStatus" 
+       x-text="saveStatus"
+       :class="{ 'bg-green-100 border-green-400 text-green-700': saveSuccess, 'bg-red-100 border-red-400 text-red-700': !saveSuccess }"
+       class="border px-4 py-3 rounded relative mb-4" 
+       role="alert"
+       x-transition>
+  </div>
+
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <span class="font-medium text-slate-700">Insurance Expiry Notifications</span>
+        <label class="switch">
+          <input type="checkbox" x-model="settings.insurance_expiry_notifications">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="font-medium text-slate-700">Mulkia Expiry Notifications</span>
+        <label class="switch">
+          <input type="checkbox" x-model="settings.mulkia_expiry_notifications">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="font-medium text-slate-700">Permit Expiry Notifications</span>
+        <label class="switch">
+          <input type="checkbox" x-model="settings.permit_expiry_notifications">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="font-medium text-slate-700">Truck Registration Expiry Notifications</span>
+        <label class="switch">
+          <input type="checkbox" x-model="settings.truck_registration_expiry_notifications">
+          <span class="slider round"></span>
+        </label>
+      </div>
+    </div>
+    <div class="mt-6 text-right">
+        <button @click="saveSettings" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+            Save Preferences
+        </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+  function notificationSettings() {
+    return {
+      settings: {},
+      saveStatus: '',
+      saveSuccess: false,
+      init() {
+        fetch("{% url 'user_notification_settings_api' %}")
+          .then(response => response.json())
+          .then(data => {
+            this.settings = data;
+          });
+      },
+      saveSettings() {
+        const csrfToken = document.querySelector('#csrf-form [name=csrfmiddlewaretoken]').value;
+        fetch("{% url 'user_notification_settings_api' %}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify(this.settings)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Something went wrong on the server.');
+        })
+        .then(data => {
+            console.log('Server Response:', data);
+            this.saveStatus = 'Settings saved successfully!';
+            this.saveSuccess = true;
+            setTimeout(() => this.saveStatus = '', 3000);
+        })
+        .catch(error => {
+            this.saveStatus = 'Error: Could not save settings.';
+            this.saveSuccess = false;
+            console.error('Error:', error);
+            setTimeout(() => this.saveStatus = '', 3000);
+        });
+      }
+    }
+  }
+</script>
+{% endblock %}

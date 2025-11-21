@@ -1,0 +1,38 @@
+from django.urls import path
+from .views import (
+    LoginView,
+    homepage,
+    logout_view,
+    vehicle_master,
+    vehicle_update,
+    vehicle_create,
+    change_log,
+    vehicle_master_api,
+    vehicle_master_detail_api,
+    dropdowns_api,
+    vehicle_edit_partial,
+    download_csv,
+    notifications_api,
+    notification_action_api,
+    user_notification_settings_api,
+    notification_settings,
+)
+
+urlpatterns = [
+    path('login/', LoginView.as_view(), name='login'),
+    path('homepage/', homepage, name='homepage'),
+    path('logout/', logout_view, name='logout'),
+    path('vehicle-master/', vehicle_master, name='vehicle_master'),
+    path('vehicle-update/<str:chassis_number>/', vehicle_update, name='vehicle_update'),
+    path('vehicle-create/', vehicle_create, name='vehicle_create'),
+    path('vehicle-edit-partial/', vehicle_edit_partial, name='vehicle_edit_partial'),
+    path('change-log/', change_log, name='change_log'),
+    path('api/vehicle-master/', vehicle_master_api, name='vehicle_master_api'),
+    path('api/vehicle-master/<str:chassis_number>/', vehicle_master_detail_api, name='vehicle_master_detail_api'),
+    path('api/dropdowns/', dropdowns_api, name='dropdowns_api'),
+    path('download-csv/', download_csv, name='download_csv'),
+    path('api/notifications/', notifications_api, name='notifications_api'),
+    path('api/notifications/<int:notification_id>/<str:action>/', notification_action_api, name='notification_action_api'),
+    path('api/user-notification-settings/', user_notification_settings_api, name='user_notification_settings_api'),
+    path('notification-settings/', notification_settings, name='notification_settings'),
+]

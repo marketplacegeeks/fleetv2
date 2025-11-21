@@ -1,0 +1,716 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Add Vehicle{% endblock %}
+{% block dashboard_content %}
+
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-slate-900 mb-2">Add New Vehicle</h1>
+          <p class="text-slate-600">Create a new vehicle record or update existing by chassis number</p>
+        </div>
+        <a href="{% url 'vehicle_master' %}"
+           class="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 shadow-sm">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Back to Vehicle Master
+        </a>
+      </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+      <div class="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4 border-b border-slate-200">
+        <h2 class="text-lg font-semibold text-white">Vehicle Information</h2>
+      </div>
+
+      <form id="vehicleCreateForm" class="p-8">
+        {% csrf_token %}
+
+        <!-- Basic Information Section -->
+        <div class="p-6 mb-8 bg-white border border-slate-200 rounded-lg shadow-sm">
+          <h3 class="text-lg font-semibold text-slate-800 mb-4 pb-2 border-b border-slate-200">Basic Information</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Chassis Number <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="chassis_number"
+                type="text"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 placeholder-slate-400"
+                placeholder="Enter chassis number"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Plate Number <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="plate_number"
+                type="text"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 placeholder-slate-400"
+                placeholder="Enter plate number"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Vehicle Capacity <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="vehicle_capacity_id"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 bg-white"
+                required
+              ></select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Vehicle Type <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="vehicle_type_id"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 bg-white"
+                required
+              ></select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Tote Capacity <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="tote_capacity_id"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 bg-white"
+                required
+              ></select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Status <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="status_id"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 bg-white"
+                required
+              ></select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Vehicle Concept <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="vehicle_concept_id"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 bg-white"
+                required
+              ></select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Make <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="make_id"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 bg-white"
+                required
+              ></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Registration Documents Section -->
+        <div class="p-6 mb-8 bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-200 rounded-lg shadow-md">
+          <div class="flex items-center gap-3 mb-6 pb-3 border-b-2 border-blue-300">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold text-slate-800">Registration Documents</h3>
+          </div>
+
+          <!-- Truck Registration -->
+          <div class="mb-6 p-5 bg-white border-2 border-slate-200 rounded-lg">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <h4 class="text-base font-semibold text-slate-700">Truck Registration</h4>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">
+                  Registration Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="truck_reg_date"
+                  type="date"
+                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-slate-900"
+                  required
+                />
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">
+                  Expiry Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="truck_registration_expiry_date"
+                  type="date"
+                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-slate-900"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Insurance -->
+          <div class="mb-6 p-5 bg-white border-2 border-slate-200 rounded-lg">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+              </div>
+              <h4 class="text-base font-semibold text-slate-700">Insurance</h4>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">
+                  Registration Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="insurance_registration_date"
+                  type="date"
+                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-slate-900"
+                  required
+                />
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">
+                  Expiry Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="insurance_registration_expiry_date"
+                  type="date"
+                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-slate-900"
+                  required
+                />
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">Document Upload</label>
+                <input
+                  id="insurance_document"
+                  type="file"
+                  accept="image/*"
+                  class="w-full px-3 py-2 border-2 border-dashed border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-slate-900 text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 file:cursor-pointer cursor-pointer bg-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Mulkia -->
+          <div class="mb-6 p-5 bg-white border-2 border-slate-200 rounded-lg">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <h4 class="text-base font-semibold text-slate-700">Mulkia</h4>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">
+                  Registration Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="mulkia_registration_date"
+                  type="date"
+                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900"
+                  required
+                />
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">
+                  Expiry Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="mulkia_registration_expiry_date"
+                  type="date"
+                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900"
+                  required
+                />
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">Document Upload</label>
+                <input
+                  id="mulkia_document"
+                  type="file"
+                  accept="image/*"
+                  class="w-full px-3 py-2 border-2 border-dashed border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-slate-900 text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer cursor-pointer bg-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Permit -->
+          <div class="p-5 bg-white border-2 border-slate-200 rounded-lg">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <h4 class="text-base font-semibold text-slate-700">Permit</h4>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">
+                  Registration Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="permit_registration_date"
+                  type="date"
+                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-slate-900"
+                  required
+                />
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">
+                  Expiry Date <span class="text-red-500">*</span>
+                </label>
+                <input
+                  id="permit_registration_expiry_date"
+                  type="date"
+                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-slate-900"
+                  required
+                />
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-slate-700">Document Upload</label>
+                <input
+                  id="permit_document"
+                  type="file"
+                  accept="image/*"
+                  class="w-full px-3 py-2 border-2 border-dashed border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-slate-900 text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 file:cursor-pointer cursor-pointer bg-white"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vehicle Details Section -->
+        <div class="p-6 mb-8 bg-white border border-slate-200 rounded-lg shadow-sm">
+          <h3 class="text-lg font-semibold text-slate-800 mb-4 pb-2 border-b border-slate-200">Vehicle Details</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                TL No <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="tl_no"
+                type="number"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 placeholder-slate-400"
+                placeholder="Enter TL number"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                TC No <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="tc_no"
+                type="number"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 placeholder-slate-400"
+                placeholder="Enter TC number"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                TC Owner <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="tc_owner"
+                type="text"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 placeholder-slate-400"
+                placeholder="Enter TC owner name"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Salik Account No <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="salik_account_no"
+                type="text"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 placeholder-slate-400"
+                placeholder="Enter Salik account"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Salik Tag No <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="salik_tag_no"
+                type="text"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 placeholder-slate-400"
+                placeholder="Enter Salik tag"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Darb Account No <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="darb_ac_no"
+                type="text"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 placeholder-slate-400"
+                placeholder="Enter Darb account"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                GPS <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="gps_id"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 bg-white"
+                required
+              ></select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Branding Status <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="branding_status_id"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 bg-white"
+                required
+              ></select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Tail Lift Brand <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="tail_lift_brand_id"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 bg-white"
+                required
+              ></select>
+            </div>
+          </div>
+
+          <div class="mt-6 flex items-center">
+            <input
+              id="lift_gate"
+              type="checkbox"
+              class="w-5 h-5 text-slate-700 border-slate-300 rounded focus:ring-slate-500 focus:ring-2 transition-all duration-200 cursor-pointer"
+            />
+            <label class="ml-3 text-sm font-medium text-slate-700 cursor-pointer" for="lift_gate">
+              Lift Gate Available <span class="text-red-500">*</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Additional Information Section -->
+        <div class="p-6 mb-8 bg-white border border-slate-200 rounded-lg shadow-sm">
+          <h3 class="text-lg font-semibold text-slate-800 mb-4 pb-2 border-b border-slate-200">Additional Information</h3>
+          <div class="space-y-6 pt-4">
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">
+                Emirates Permit
+                <span class="text-slate-500 text-xs ml-2">(Hold Ctrl/Cmd to select multiple)</span>
+              </label>
+              <select
+                id="emirates_permit_ids"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 bg-white min-h-[100px]"
+                multiple
+              ></select>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">Remarks</label>
+              <textarea
+                id="remarks"
+                rows="4"
+                class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 placeholder-slate-400 resize-y"
+                placeholder="Enter any additional remarks or notes..."
+              ></textarea>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-slate-700">Truck Photo</label>
+              <div class="relative">
+                <input
+                  id="truck_photos"
+                  type="file"
+                  accept="image/*"
+                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 text-slate-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 file:cursor-pointer cursor-pointer"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Section -->
+        <div class="flex items-center justify-between pt-6 border-t border-slate-200">
+          <span id="statusMsg" class="text-sm font-medium"></span>
+          <button
+            id="createSubmitBtn"
+            type="submit"
+            class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-slate-800 border border-transparent rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+          >
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Create Vehicle
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const apiListUrl = "{% url 'vehicle_master_api' %}";
+  const dropdownsUrl = "{% url 'dropdowns_api' %}";
+
+  function getCookie(name) {
+    const value = "; " + document.cookie;
+    const parts = value.split("; " + name + "=");
+    if (parts.length === 2) return parts.pop().split(";").shift();
+  }
+  const csrftoken = getCookie("csrftoken");
+
+  const statusMsg = document.getElementById("statusMsg");
+
+  function populateSelect(selectEl, items, includePlaceholder = true) {
+    while (selectEl.firstChild) selectEl.removeChild(selectEl.firstChild);
+    if (includePlaceholder) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "-- select --";
+      selectEl.appendChild(opt);
+    }
+    for (const item of items) {
+      const opt = document.createElement("option");
+      opt.value = String(item.id);
+      opt.textContent = item.name;
+      selectEl.appendChild(opt);
+    }
+  }
+
+  function getMultiSelectValues(selectEl) {
+    const values = [];
+    for (const opt of selectEl.selectedOptions) {
+      const id = parseInt(opt.value, 10);
+      if (!isNaN(id)) values.push(id);
+    }
+    return values;
+  }
+
+  async function fetchDropdowns() {
+    const res = await fetch(dropdownsUrl, { credentials: "same-origin" });
+    if (!res.ok) {
+      statusMsg.textContent = "Failed to load dropdowns.";
+      statusMsg.className = "text-sm font-medium text-red-600";
+      return;
+    }
+    const d = await res.json();
+    populateSelect(
+      document.getElementById("vehicle_capacity_id"),
+      d.vehicle_capacities
+    );
+    populateSelect(document.getElementById("vehicle_type_id"), d.vehicle_types);
+    populateSelect(
+      document.getElementById("tote_capacity_id"),
+      d.tote_capacities
+    );
+    populateSelect(document.getElementById("status_id"), d.statuses);
+    populateSelect(
+      document.getElementById("vehicle_concept_id"),
+      d.vehicle_concepts
+    );
+    populateSelect(document.getElementById("make_id"), d.makes);
+    populateSelect(document.getElementById("gps_id"), d.gps_list);
+    populateSelect(
+      document.getElementById("branding_status_id"),
+      d.branding_statuses
+    );
+    populateSelect(
+      document.getElementById("tail_lift_brand_id"),
+      d.tail_lift_brands
+    );
+    populateSelect(
+      document.getElementById("emirates_permit_ids"),
+      d.emirates,
+      false
+    );
+  }
+
+  document
+    .getElementById("vehicleCreateForm")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      statusMsg.textContent = "";
+      statusMsg.className = "text-sm font-medium text-slate-600";
+
+      const submitBtn = document.getElementById("createSubmitBtn");
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Creating...';
+
+      const payload = {
+        chassis_number: document.getElementById("chassis_number").value.trim(),
+        plate_number: document.getElementById("plate_number").value.trim(),
+        vehicle_capacity_id: parseInt(
+          document.getElementById("vehicle_capacity_id").value,
+          10
+        ),
+        vehicle_type_id: parseInt(
+          document.getElementById("vehicle_type_id").value,
+          10
+        ),
+        tote_capacity_id: parseInt(
+          document.getElementById("tote_capacity_id").value,
+          10
+        ),
+        status_id: parseInt(document.getElementById("status_id").value, 10),
+        vehicle_concept_id: parseInt(
+          document.getElementById("vehicle_concept_id").value,
+          10
+        ),
+        make_id: parseInt(document.getElementById("make_id").value, 10),
+        truck_reg_date: document.getElementById("truck_reg_date").value,
+        insurance_registration_date: document.getElementById("insurance_registration_date")
+          .value,
+        mulkia_registration_date: document.getElementById(
+          "mulkia_registration_date"
+        ).value,
+        permit_registration_date: document.getElementById(
+          "permit_registration_date"
+        ).value,
+        truck_registration_expiry_date: document.getElementById(
+          "truck_registration_expiry_date"
+        ).value,
+        insurance_registration_expiry_date: document.getElementById(
+          "insurance_registration_expiry_date"
+        ).value,
+        mulkia_registration_expiry_date: document.getElementById(
+          "mulkia_registration_expiry_date"
+        ).value,
+        permit_registration_expiry_date: document.getElementById(
+          "permit_registration_expiry_date"
+        ).value,
+        tl_no: parseInt(document.getElementById("tl_no").value, 10),
+        tc_no: parseInt(document.getElementById("tc_no").value, 10),
+        tc_owner: document.getElementById("tc_owner").value.trim(),
+        salik_account_no: document
+          .getElementById("salik_account_no")
+          .value.trim(),
+        salik_tag_no: document.getElementById("salik_tag_no").value.trim(),
+        darb_ac_no: document.getElementById("darb_ac_no").value.trim(),
+        gps_id: parseInt(document.getElementById("gps_id").value, 10),
+        branding_status_id: parseInt(
+          document.getElementById("branding_status_id").value,
+          10
+        ),
+        lift_gate: document.getElementById("lift_gate").checked,
+        tail_lift_brand_id: parseInt(
+          document.getElementById("tail_lift_brand_id").value,
+          10
+        ),
+        remarks: document.getElementById("remarks").value,
+        emirates_permit_ids: getMultiSelectValues(
+          document.getElementById("emirates_permit_ids")
+        ),
+      };
+
+      if (!payload.chassis_number) {
+        statusMsg.textContent = "Chassis number is required.";
+        statusMsg.className = "text-sm font-medium text-red-600";
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>Create Vehicle';
+        return;
+      }
+
+      try {
+        const fd = new FormData();
+
+        for (const [k, v] of Object.entries(payload)) {
+          if (k === "emirates_permit_ids") {
+            fd.append(k, JSON.stringify(v));
+          } else if (v !== undefined && v !== null) {
+            fd.append(k, String(v));
+          }
+        }
+
+        const insFile = document.getElementById("insurance_document").files[0];
+        if (insFile) fd.append("insurance_document", insFile);
+        const mulFile = document.getElementById("mulkia_document").files[0];
+        if (mulFile) fd.append("mulkia_document", mulFile);
+        const permitFile = document.getElementById("permit_document").files[0];
+        if (permitFile) fd.append("permit_document", permitFile);
+        const truckFile = document.getElementById("truck_photos").files[0];
+        if (truckFile) fd.append("truck_photos", truckFile);
+
+        const res = await fetch(apiListUrl, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrftoken || "",
+          },
+          body: fd,
+          credentials: "same-origin",
+        });
+
+        const result = await res.json().catch(() => null);
+        if (!res.ok) {
+          statusMsg.textContent = result?.error || "Create failed.";
+          statusMsg.className = "text-sm font-medium text-red-600";
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>Create Vehicle';
+          return;
+        }
+
+        statusMsg.textContent = "Vehicle created successfully!";
+        statusMsg.className = "text-sm font-medium text-green-600";
+        submitBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>Success';
+
+        setTimeout(() => {
+          window.location.href = "{% url 'vehicle_master' %}";
+        }, 1500);
+      } catch (err) {
+        statusMsg.textContent = "Network error. Please try again.";
+        statusMsg.className = "text-sm font-medium text-red-600";
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>Create Vehicle';
+      }
+    });
+
+  fetchDropdowns();
+</script>
+{% endblock %}

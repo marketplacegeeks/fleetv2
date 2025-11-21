@@ -1,0 +1,359 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Edit Vehicle{% endblock %}
+
+{% block dashboard_content %}
+<div class="py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-slate-900 mb-2">Edit Vehicle</h1>
+          <p class="text-slate-600">Update the details for chassis number: <span class="font-semibold text-slate-800">{{ chassis_number }}</span></p>
+        </div>
+        <a href="{% url 'vehicle_master' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 shadow-sm">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Back to Vehicle Master
+        </a>
+      </div>
+      <div id="statusMsg" class="text-sm mt-4 font-medium empty:hidden"></div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+      <div class="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4 border-b border-slate-200">
+        <h2 class="text-lg font-semibold text-white">Vehicle Information</h2>
+      </div>
+      <div id="editContainer" class="p-8">
+        <!-- Loading state for the form -->
+        <div class="flex flex-col items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+          <p class="text-slate-600 font-medium">Loading edit form...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Log History -->
+    <div class="mt-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4">Change Log History</h2>
+      <div class="bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full table-auto text-sm text-left text-slate-600 whitespace-nowrap">
+            <thead class="bg-gradient-to-r from-slate-800 to-slate-700 text-xs uppercase text-white font-semibold tracking-wider">
+              <tr>
+                <th class="px-4 py-4">Date</th>
+                <th class="px-4 py-4">Time</th>
+                <th class="px-4 py-4">Field</th>
+                <th class="px-4 py-4">Old Value</th>
+                <th class="px-4 py-4">New Value</th>
+                <th class="px-4 py-4">User</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              {% for log in change_logs %}
+              <tr class="hover:bg-slate-50 transition duration-150 ease-in-out">
+                <td class="px-4 py-4">{{ log.date }}</td>
+                <td class="px-4 py-4">{{ log.time }}</td>
+                <td class="px-4 py-4 font-medium text-slate-800">{{ log.field_name }}</td>
+                <td class="px-4 py-4">{{ log.old_value|default:"—" }}</td>
+                <td class="px-4 py-4">{{ log.new_value|default:"—" }}</td>
+                <td class="px-4 py-4">{{ log.username|default:"—" }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="px-4 py-12 text-center">
+                  <div class="flex flex-col items-center justify-center">
+                    <svg class="w-16 h-16 text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-slate-600 font-medium mb-2">No changes found for this vehicle.</p>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const dropdownsUrl = "{% url 'dropdowns_api' %}";
+  const editPartialUrl = "{% url 'vehicle_edit_partial' %}";
+  const detailBaseUrl = "/office/api/vehicle-master/";
+  const apiListUrl = "{% url 'vehicle_master_api' %}";
+  const chassisNumber = "{{ chassis_number }}";
+  const masterUrl = "{% url 'vehicle_master' %}";
+
+  function getCookie(name) {
+    const value = "; " + document.cookie;
+    const parts = value.split("; " + name + "=");
+    if (parts.length === 2) return parts.pop().split(";").shift();
+  }
+  const csrftoken = getCookie("csrftoken");
+
+  const statusMsg = document.getElementById("statusMsg");
+
+  let dropdownData = null;
+
+  function setStatus(message, type = 'info') {
+    statusMsg.innerHTML = '';
+    if (!message) return;
+
+    const typeClasses = {
+      info: 'bg-blue-50 border-blue-200 text-blue-700',
+      success: 'bg-green-50 border-green-200 text-green-700',
+      error: 'bg-red-50 border-red-200 text-red-700',
+    };
+    const icon = {
+      info: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />',
+      success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />',
+      error: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />',
+    };
+
+    statusMsg.innerHTML = `
+      <div class="flex items-center p-4 rounded-lg shadow-sm ${typeClasses[type]}">
+        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">${icon[type]}</svg>
+        <span class="font-medium">${message}</span>
+      </div>
+    `;
+  }
+
+  function populateSelect(selectEl, items, includePlaceholder = true) {
+    if (!selectEl) return;
+    while (selectEl.firstChild) selectEl.removeChild(selectEl.firstChild);
+    if (includePlaceholder) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "-- select --";
+      selectEl.appendChild(opt);
+    }
+    for (const item of items) {
+      const opt = document.createElement("option");
+      opt.value = String(item.id);
+      opt.textContent = item.name;
+      selectEl.appendChild(opt);
+    }
+  }
+
+  function getMultiSelectValues(selectEl) {
+    const values = [];
+    for (const opt of selectEl.selectedOptions) {
+      const id = parseInt(opt.value, 10);
+      if (!isNaN(id)) values.push(id);
+    }
+    return values;
+  }
+
+  async function fetchDropdowns() {
+    try {
+      const res = await fetch(dropdownsUrl, { credentials: "same-origin" });
+      if (!res.ok) {
+        setStatus("Failed to load dropdown options.", 'error');
+        return;
+      }
+      dropdownData = await res.json();
+    } catch (err) {
+      setStatus("Network error loading dropdowns.", 'error');
+    }
+  }
+
+  async function loadEditPartial() {
+    try {
+      const res = await fetch(editPartialUrl, { credentials: "same-origin" });
+      if (!res.ok) {
+        setStatus("Failed to load the edit form.", 'error');
+        return false;
+      }
+      const html = await res.text();
+      document.getElementById("editContainer").innerHTML = html;
+      return true;
+    } catch (err) {
+      setStatus("Network error loading the edit form.", 'error');
+      return false;
+    }
+  }
+
+  function populateEditDropdowns() {
+    if (!dropdownData) return;
+    populateSelect(document.getElementById("edit_vehicle_capacity_id"), dropdownData.vehicle_capacities);
+    populateSelect(document.getElementById("edit_vehicle_type_id"), dropdownData.vehicle_types);
+    populateSelect(document.getElementById("edit_tote_capacity_id"), dropdownData.tote_capacities);
+    populateSelect(document.getElementById("edit_status_id"), dropdownData.statuses);
+    populateSelect(document.getElementById("edit_vehicle_concept_id"), dropdownData.vehicle_concepts);
+    populateSelect(document.getElementById("edit_make_id"), dropdownData.makes);
+    populateSelect(document.getElementById("edit_gps_id"), dropdownData.gps_list);
+    populateSelect(document.getElementById("edit_branding_status_id"), dropdownData.branding_statuses);
+    populateSelect(document.getElementById("edit_tail_lift_brand_id"), dropdownData.tail_lift_brands);
+    populateSelect(document.getElementById("edit_emirates_permit_ids"), dropdownData.emirates, false);
+  }
+
+  async function prefillForm() {
+    const url = detailBaseUrl + encodeURIComponent(chassisNumber) + "/";
+    try {
+      const res = await fetch(url, { credentials: "same-origin" });
+      if (!res.ok) {
+        setStatus("Failed to load vehicle details.", 'error');
+        return;
+      }
+      const v = await res.json();
+
+      document.getElementById("edit_chassis_number").value = v.chassis_number ?? chassisNumber;
+      document.getElementById("edit_plate_number").value = v.plate_number ?? "";
+      document.getElementById("edit_truck_reg_date").value = v.truck_reg_date ?? "";
+      document.getElementById("edit_insurance_registration_date").value = v.insurance_registration_date ?? "";
+      document.getElementById("edit_mulkia_registration_date").value = v.mulkia_registration_date ?? "";
+      document.getElementById("edit_permit_registration_date").value = v.permit_registration_date ?? "";
+      document.getElementById("edit_truck_registration_expiry_date").value = v.truck_registration_expiry_date ?? "";
+      document.getElementById("edit_insurance_registration_expiry_date").value = v.insurance_registration_expiry_date ?? "";
+      document.getElementById("edit_mulkia_registration_expiry_date").value = v.mulkia_registration_expiry_date ?? "";
+      document.getElementById("edit_permit_registration_expiry_date").value = v.permit_registration_expiry_date ?? "";
+      document.getElementById("edit_tl_no").value = v.tl_no ?? "";
+      document.getElementById("edit_tc_no").value = v.tc_no ?? "";
+      document.getElementById("edit_tc_owner").value = v.tc_owner ?? "";
+      document.getElementById("edit_salik_account_no").value = v.salik_account_no ?? "";
+      document.getElementById("edit_salik_tag_no").value = v.salik_tag_no ?? "";
+      document.getElementById("edit_darb_ac_no").value = v.darb_ac_no ?? "";
+      document.getElementById("edit_lift_gate").checked = !!v.lift_gate;
+      document.getElementById("edit_remarks").value = v.remarks ?? "";
+
+      document.getElementById("edit_vehicle_capacity_id").value = v.vehicle_capacity?.id ? String(v.vehicle_capacity.id) : "";
+      document.getElementById("edit_vehicle_type_id").value = v.vehicle_type?.id ? String(v.vehicle_type.id) : "";
+      document.getElementById("edit_tote_capacity_id").value = v.tote_capacity?.id ? String(v.tote_capacity.id) : "";
+      document.getElementById("edit_status_id").value = v.status?.id ? String(v.status.id) : "";
+      document.getElementById("edit_vehicle_concept_id").value = v.vehicle_concept?.id ? String(v.vehicle_concept.id) : "";
+      document.getElementById("edit_make_id").value = v.make?.id ? String(v.make.id) : "";
+      document.getElementById("edit_gps_id").value = v.gps?.id ? String(v.gps.id) : "";
+      document.getElementById("edit_branding_status_id").value = v.branding_status?.id ? String(v.branding_status.id) : "";
+      document.getElementById("edit_tail_lift_brand_id").value = v.tail_lift_brand?.id ? String(v.tail_lift_brand.id) : "";
+
+      const emSel = document.getElementById("edit_emirates_permit_ids");
+      for (const opt of emSel.options) {
+        opt.selected = v.emirates_permit?.some((e) => String(e.id) === opt.value) ?? false;
+      }
+
+      const docLinks = {
+        'current_insurance_document': v.insurance_document_url,
+        'current_mulkia_document': v.mulkia_document_url,
+        'current_permit_document': v.permit_document_url,
+        'current_truck_photos': v.truck_photos_url,
+      };
+      for (const [id, url] of Object.entries(docLinks)) {
+        const link = document.getElementById(id);
+        if (link) {
+          if (url) {
+            link.href = url;
+            link.style.display = 'inline-flex';
+          } else {
+            link.style.display = 'none';
+          }
+        }
+      }
+    } catch (err) {
+      setStatus("Network error loading vehicle details.", 'error');
+    }
+  }
+
+  function attachSubmitHandler() {
+    const form = document.getElementById("editVehicleForm");
+    if (!form) return;
+
+    const submitBtn = document.getElementById("editUpdateBtn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      setStatus("Updating vehicle...", 'info');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Updating...';
+
+      const payload = {
+        chassis_number: chassisNumber,
+        plate_number: document.getElementById("edit_plate_number").value.trim(),
+        vehicle_capacity_id: parseInt(document.getElementById("edit_vehicle_capacity_id").value, 10),
+        vehicle_type_id: parseInt(document.getElementById("edit_vehicle_type_id").value, 10),
+        tote_capacity_id: parseInt(document.getElementById("edit_tote_capacity_id").value, 10),
+        status_id: parseInt(document.getElementById("edit_status_id").value, 10),
+        vehicle_concept_id: parseInt(document.getElementById("edit_vehicle_concept_id").value, 10),
+        make_id: parseInt(document.getElementById("edit_make_id").value, 10),
+        truck_reg_date: document.getElementById("edit_truck_reg_date").value,
+        insurance_registration_date: document.getElementById("edit_insurance_registration_date").value,
+        mulkia_registration_date: document.getElementById("edit_mulkia_registration_date").value,
+        permit_registration_date: document.getElementById("edit_permit_registration_date").value,
+        truck_registration_expiry_date: document.getElementById("edit_truck_registration_expiry_date").value,
+        insurance_registration_expiry_date: document.getElementById("edit_insurance_registration_expiry_date").value,
+        mulkia_registration_expiry_date: document.getElementById("edit_mulkia_registration_expiry_date").value,
+        permit_registration_expiry_date: document.getElementById("edit_permit_registration_expiry_date").value,
+        tl_no: parseInt(document.getElementById("edit_tl_no").value, 10),
+        tc_no: parseInt(document.getElementById("edit_tc_no").value, 10),
+        tc_owner: document.getElementById("edit_tc_owner").value.trim(),
+        salik_account_no: document.getElementById("edit_salik_account_no").value.trim(),
+        salik_tag_no: document.getElementById("edit_salik_tag_no").value.trim(),
+        darb_ac_no: document.getElementById("edit_darb_ac_no").value.trim(),
+        gps_id: parseInt(document.getElementById("edit_gps_id").value, 10),
+        branding_status_id: parseInt(document.getElementById("edit_branding_status_id").value, 10),
+        lift_gate: document.getElementById("edit_lift_gate").checked,
+        tail_lift_brand_id: parseInt(document.getElementById("edit_tail_lift_brand_id").value, 10),
+        remarks: document.getElementById("edit_remarks").value,
+        emirates_permit_ids: getMultiSelectValues(document.getElementById("edit_emirates_permit_ids")),
+      };
+
+      try {
+        const fd = new FormData();
+        for (const [k, v] of Object.entries(payload)) {
+          if (k === "emirates_permit_ids") {
+            fd.append(k, JSON.stringify(v));
+          } else if (v !== undefined && v !== null && !Number.isNaN(v)) {
+            fd.append(k, String(v));
+          }
+        }
+
+        const insFile = document.getElementById("edit_insurance_document").files[0];
+        if (insFile) fd.append("insurance_document", insFile);
+        const mulFile = document.getElementById("edit_mulkia_document").files[0];
+        if (mulFile) fd.append("mulkia_document", mulFile);
+        const permitFile = document.getElementById("edit_permit_document").files[0];
+        if (permitFile) fd.append("permit_document", permitFile);
+        const truckFile = document.getElementById("edit_truck_photos").files[0];
+        if (truckFile) fd.append("truck_photos", truckFile);
+
+        const res = await fetch(apiListUrl, {
+          method: "POST",
+          headers: { "X-CSRFToken": csrftoken || "" },
+          body: fd,
+          credentials: "same-origin",
+        });
+
+        const result = await res.json().catch(() => null);
+        if (!res.ok) {
+          setStatus(result?.error || "Update failed.", 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Update Vehicle';
+          return;
+        }
+
+        setStatus("Vehicle updated successfully! Redirecting...", 'success');
+        setTimeout(() => {
+          window.location.href = masterUrl + "?updated=1";
+        }, 1500);
+      } catch (err) {
+        setStatus("A network error occurred. Please try again.", 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Update Vehicle';
+      }
+    });
+  }
+
+  (async function init() {
+    const ok = await loadEditPartial();
+    if (!ok) return;
+    await fetchDropdowns();
+    populateEditDropdowns();
+    await prefillForm();
+    attachSubmitHandler();
+  })();
+</script>
+{% endblock %}
